@@ -10,12 +10,15 @@ from ignite.engine import Engine
 from ignite.engine import Events
 from ignite.metrics import RunningAverage
 from ignite.contrib.handlers.tqdm_logger import ProgressBar
+from ignite.contrib.handlers.tensorboard_logger import *
 
 from classification.utils import get_grad_norm, get_parameter_norm
 
 VERBOSE_SILENT = 0
 VERBOSE_EPOCH_WISE = 1
 VERBOSE_BATCH_WISE = 2
+
+tb_logger = TensorboardLogger(log_dir='experiments/tb_logs')
 
 class MyEngine(Engine):
 
@@ -204,7 +207,15 @@ class Trainer():
             MyEngine.save_model, # function
             train_engine, self.config, # arguments
         )
-
+        tb_logger.attach(
+            validation_engine,
+            log_handler=OutputHandler(
+                tag='validation',
+                metric_names=['loss','accuracy'],
+                global_step_transform=global_step_from_engine(train_engine)
+            ),
+            event_name=Events.EPOCH_COMPLETED
+        )
         train_engine.run(
             train_loader,
             max_epochs=self.config.n_epochs,

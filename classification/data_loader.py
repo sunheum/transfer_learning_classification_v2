@@ -21,10 +21,10 @@ def load_dataset():
 
     if not os.path.isdir(images_path):
         os.makedirs(images_path)
-    for filename, url in ('images.tar.gz',images_url):
-        path = os.path.join(images_path, filename)
-        if not os.path.isfile(path):
-            urllib.request.urlretrieve(url, path)
+
+    path = os.path.join(images_path, 'images.tar.gz')
+    if not os.path.isfile(path):
+        urllib.request.urlretrieve(images_url, path)
         tar_file = tarfile.open(path)
         tar_file.extractall(path=images_path)
         tar_file.close()
@@ -51,7 +51,7 @@ def load_dataset():
     data = list(zip(data, labels))
     return data, classes
 
-class PetDataset(Dataset):
+class CustomDataset(Dataset):
     "Dataset to serve individual images to our model"
     
     def __init__(self, data, transforms=None):
@@ -93,8 +93,8 @@ class Databasket():
             self.train_data += class_dp[:split_idx]
             self.val_data += class_dp[split_idx:]
             
-        self.train_ds = PetDataset(self.train_data, transforms=train_transforms)
-        self.val_ds = PetDataset(self.val_data, transforms=val_transforms)
+        self.train_ds = CustomDataset(self.train_data, transforms=train_transforms)
+        self.val_ds = CustomDataset(self.val_data, transforms=val_transforms)
 
 def get_loaders(config, input_size):
     data_transforms = {
